@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>AquaProbe</title>
+  <link rel="stylesheet" type="text/css" href="css/site.css">
+  
+</head>
+<body style='margin:10px'>
+  <div class='main_title'>AquaProbe</div>
+<div  class="flex" style="justify-content: center;padding-top:20px;">
+        <div id="moistureData" class="status">0</div>    
+</div>
+<div  class="flex" style="justify-content: center;padding-top:20px;">
+  <div id="batteryData" class="status">0V</div> 
+</div>
+<div class="border2">
+  <form method='POST' action=''>
+<center>
+<table class="tbl-r05">
+  <tr>
+    <td>デバイスID</td>
+    <td style="text-align:center;"> 
+      <input type="text" id = "devID" name = "devID">
+    </td>
+  </tr>
+  <tr>
+    <td>スクリプトID</td>
+    <td style="text-align:center;"> 
+      <input type="text" id = "GScriptId" name = "GScriptId">
+    </td>
+  </tr>
+  <tr>
+    <td>SSID</td>
+    <td style="text-align:center;"> 
+      <input type="text" id = "ssid" name = "ssid">
+    </td>
+  </tr>
+  <tr>
+    <td>パスワード</td>
+    <td style="text-align:center;"> 
+      <input type="text" id = "pass" name = "pass">
+    </td>
+  </tr>
+</table>
+
+<button class='btn' type='submit' name='basicconfset' value='1'>設定する</button>
+</center>
+
+</form>
+</div>
+</body>
+<script src="js/jquery.min.js"></script>
+  <script type="text/javascript">
+  
+  //-->
+var set_interval_id = 0;
+var config_log = 'nul';
+var init = 1;
+function getJSON() {
+  
+	var req = new XMLHttpRequest();       // XMLHttpRequest オブジェクトを生成する
+	req.onreadystatechange = function() { // XMLHttpRequest オブジェクトの状態が変化した際に呼び出されるイベントハンドラ
+		if(req.readyState == 4 && req.status == 200){ // サーバーからのレスポンスが完了し、かつ、通信が正常に終了した場合
+      // console.log(req.responseText);
+			const data = JSON.parse(req.responseText);    // 取得した JSON ファイルの中身を変数へ格納
+			//var len = data.length;                    // JSON のデータ数を取得
+      var strli = '';
+      strli = "Sensor:"
+      strli +=  String(data.sensor.moistureData);
+      console.log(data);
+      document.getElementById("moistureData").innerHTML = strli;
+
+      strli = "Battery:"
+      strli += String(data.sensor.batteryData/1000);
+      strli += "V"
+      document.getElementById("batteryData").innerHTML = strli;
+
+      if(!(JSON.stringify(data.config) == config_log)){
+        console.log(data.config);
+        console.log(config_log);
+        console.log('change!');
+        init = 0;
+        config_log = JSON.stringify(data.config);
+
+        strli = (data.config.ssid);
+        document.getElementById('ssid').value = strli;
+        
+        strli = (data.config.pass);
+        document.getElementById('pass').value = strli;
+        
+        strli = (data.config.devID);
+        document.getElementById('devID').value = strli;
+        
+        strli = (data.config.GScriptId);
+        document.getElementById('GScriptId').value = strli;
+        
+      }
+    }
+	};
+	req.open("GET","NowSensor.json", false); // HTTPメソッドとアクセスするサーバーのURLを指定
+	req.send(null);                       // 実際にサーバーへリクエストを送信
+}
+function startfnc()
+{
+	clearInterval(set_interval_id);
+	//関数hyoji()を1000ミリ秒間隔で呼び出す 
+	set_interval_id = setInterval("getJSON()",1000);
+}
+startfnc();
+  </script>
+</html>
